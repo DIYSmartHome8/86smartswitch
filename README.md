@@ -1,3 +1,4 @@
+esphome 磁保持继电器代码
 # 86开关磁保持继电器版<br>
 ![Image text](https://github.com/DIYSmartHome8/86smartswitch/blob/main/IMG/No.1.jpg)<br>
 ## 高压低压完全隔离<br>
