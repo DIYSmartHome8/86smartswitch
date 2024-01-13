@@ -1,0 +1,203 @@
+#living-room
+#bed-room1
+#bed-room2
+substitutions:
+  devicename: relayx1_test
+  address_name: relayx1_test
+  project_name: $devicename
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: d1_mini
+  on_boot:
+    - output.turn_off: relayx1_test_relay1set_gpio
+    - output.turn_off: relayx1_test_relay1reset_gpio
+    - light.turn_on: relayx1_test_relayled
+
+wifi:
+  networks:
+    - ssid: !secret ssid1
+      password: !secret ssid1_password
+  use_address: $address_name
+  fast_connect: False
+  power_save_mode: none
+  domain: .local
+  on_connect:
+    - light.turn_off: relayx1_test_relayled
+  on_disconnect:
+    - light.turn_on: relayx1_test_relayled
+
+mqtt:
+  broker: !secret mqtt_broker
+  username: !secret mqtt_username
+  password: !secret mqtt_password
+  port: !secret mqtt_port
+  discovery: True
+  discovery_retain: True
+  discovery_prefix: homeassistant #homeassistant
+  topic_prefix: 'relayx1/test'
+  on_message:
+    topic: relayx1/test/relayctrl
+    qos: 1
+    then:
+      if:
+        condition:
+          lambda: 'return x == "on";'
+        then:
+          - light.turn_on: relayx1_test_light
+        else:
+          - light.turn_off: relayx1_test_light
+
+
+captive_portal:
+
+ota:
+  password: !secret ota_password
+
+# api:
+#   password: !secret api_password
+
+web_server:
+  port: 80
+  auth:
+    username: admin
+    password: !secret web_password
+
+# Enable logging
+logger:
+  level: INFO
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO14
+      mode: INPUT_PULLUP
+      inverted: true
+    name: $project_name KEY0
+    internal: true
+    on_press:
+      then:
+        - light.toggle: relayx1_test_light
+    filters:
+      - delayed_on_off: 10ms
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: true
+    name: $project_name KEY1
+    filters:
+      - delayed_on_off: 10ms
+  - platform: gpio
+    id: relayx1_test_relay_stauts
+    pin: GPIO12
+    name: $project_name Relay Stauts
+    device_class: power
+
+button:
+  - platform: restart
+    name: $project_name Restart
+    entity_category: config
+  - platform: factory_reset
+    disabled_by_default: True
+    name: $project_name Factory Reset
+    id: factory_reset_all
+
+light:
+  - platform: binary
+    id: relayx1_test_light
+    name: $project_name Lamp
+    output: fake_out
+    on_turn_on:
+      then:
+        - light.turn_off: relayx1_test_relayled
+        - script.execute: turn_on_relay1
+        - script.wait: turn_on_relay1
+    on_turn_off:
+      then:
+        # - light.turn_on: relayx1_test_relayled
+        - script.execute: turn_off_relay1
+        - script.wait: turn_off_relay1
+  - platform: binary
+    name: $project_name RelayLed
+    id: relayx1_test_relayled
+    output: fake_out
+    on_turn_on:
+      then:
+        if:
+          condition:
+            light.is_off: relayx1_test_light
+          then:
+            - output.turn_on: relayx1_test_relayled_gpio
+          else:
+            - light.turn_off: relayx1_test_relayled
+    on_turn_off:
+      then:
+        - output.turn_off: relayx1_test_relayled_gpio
+
+output:
+  - id: relayx1_test_relay1set_gpio
+    platform: gpio
+    pin: GPIO05
+  - id: relayx1_test_relay1reset_gpio
+    platform: gpio
+    pin: GPIO04
+  - platform: template
+    id: fake_out
+    type: float
+    write_action:
+      - logger.log: "NoThing"
+  - platform: gpio
+    id: relayx1_test_relayled_gpio
+    pin: GPIO16
+    inverted: true
+
+script:
+  - id: turn_on_relay1
+    then:
+      - output.turn_on: relayx1_test_relay1set_gpio
+      - delay: 70ms
+      - output.turn_off: relayx1_test_relay1set_gpio
+  - id: turn_off_relay1
+    then:
+      - output.turn_on: relayx1_test_relay1reset_gpio
+      - delay: 70ms
+      - output.turn_off: relayx1_test_relay1reset_gpio
+
+sensor:
+  - platform: wifi_signal
+    name: $project_name RSSI
+    update_interval: 60s
+  - platform: uptime
+    name: Uptime Sensor
+    id: uptime_sensor
+    update_interval: 3600s
+    internal: true
+    on_raw_value:
+      then:
+        - text_sensor.template.publish:
+            id: uptime_human
+            state: !lambda |-
+              int seconds = round(id(uptime_sensor).raw_state);
+              int days = seconds / (24 * 3600);
+              seconds = seconds % (24 * 3600);
+              int hours = seconds / 3600;
+              seconds = seconds % 3600;
+              int minutes = seconds /  60;
+              seconds = seconds % 60;
+              return (
+                (days ? String(days) + "d " : "") +
+                (hours ? String(hours) + "h " : "") +
+                (minutes ? String(minutes) + "m " : "") +
+                (String(seconds) + "s")
+              ).c_str();
+
+text_sensor:
+  - platform: template
+    name: $project_name Uptime
+    id: uptime_human
+    icon: mdi:clock-start
+  - platform: wifi_info
+    ip_address:
+      name: $project_name IP Address

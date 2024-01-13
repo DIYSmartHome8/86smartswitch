@@ -1,3 +1,19 @@
 # 86开关磁保持继电器版<br>
 ![Image text](https://github.com/DIYSmartHome8/86smartswitch/blob/main/IMG/No.1.jpg)<br>
+## 高压低压完全隔离<br>
 ![Image text](https://github.com/DIYSmartHome8/86smartswitch/blob/main/IMG/No.2.jpg)<br>
+## 接线方式1<br>
+![Image text](https://github.com/DIYSmartHome8/86smartswitch/blob/main/IMG/No.3.jpg)<br>
+## 接线方式2<br>
+![Image text](https://github.com/DIYSmartHome8/86smartswitch/blob/main/IMG/No.4.jpg)<br>
+![Image text](https://github.com/DIYSmartHome8/86smartswitch/blob/main/IMG/No.5.jpg)<br>
+## ESP8266-IO定义<br>
+![Image text](https://github.com/DIYSmartHome8/86smartswitch/blob/main/IMG/No.6.jpg)<br>
+## 面板及安装效果<br>
+![Image text](https://github.com/DIYSmartHome8/86smartswitch/blob/main/IMG/No.9.jpg)<br>
+![Image text](https://github.com/DIYSmartHome8/86smartswitch/blob/main/IMG/No.10.jpg)<br>
+功能键其实只是个按键，可以拿来控制公共空间的灯，比如关厅的灯等。<br>
+## 网页控制<br>
+![Image text](https://github.com/DIYSmartHome8/86smartswitch/blob/main/IMG/No.7.jpg)<br>
+## Homeassistant控制<br>
+![Image text](https://github.com/DIYSmartHome8/86smartswitch/blob/main/IMG/No.8.jpg)<br>
